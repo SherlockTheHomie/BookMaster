@@ -1,5 +1,5 @@
 const { AuthenticationError } = require('apollo-server-express');
-const { User, Book, SavedBook } = require('../schemas/typeDefs');
+const { User } = require('../models');
 const { signToken } = require('../utils/auth');
 
 const resolvers = {
@@ -32,31 +32,30 @@ const resolvers = {
       const token = signToken(user);
       return { token, user };
     },
-    saveBook: async (parent, { input: savedBook }, context) => {
+    saveBook: async (parent, { User }, context) => {
       // If context has a `user` property, that means the user executing this mutation has a valid JWT and is logged in
       if (context.user) {
-        return Profile.findOneAndUpdate(
-          { _id: profileId },
-          {
-            $addToSet: { skills: skill },
-          },
-          {
-            new: true,
-            runValidators: true,
-          }
+        return User.findOneAndUpdate(
+          { _id: user._id },
+          { $addToSet: { savedBooks: body } },
+          { new: true, runValidators: true }
         );
       }
-      // If user attempts to execute this mutation and isn't logged in, throw an error
+    
       throw new AuthenticationError('You need to be logged in!');
     },
-    // Set up mutation so a logged in user can only remo
-    createVote: async (parent, { _id, techNum }) => {
-      const vote = await Matchup.findOneAndUpdate(
-        { _id },
-        { $inc: { [`tech${techNum}_votes`]: 1 } },
-        { new: true }
-      );
-      return vote;
+    removeBook: async (parent, { User }, context) => {
+      if (context.user) {
+        const book = await User.findOne({
+          savedBooks: bookId
+        });
+        await User.findOneAndUpdate(
+          { savedBooks: bookId },
+          { $pull: { savedBooks: bookId } },
+          { new: true }
+        )
+      }
+      throw new AuthenticationError('You need to be logged in!');
     },
   },
 };
