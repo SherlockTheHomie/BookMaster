@@ -20,12 +20,11 @@ const SearchBooks = () => {
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
 
   const [saveBook, { data, loading, error }] = useMutation(SAVE_BOOK);
-  const book = data?.books || [];
   
   const handleFormSubmit = async (event) => {
     event.preventDefault();
 
-    saveBook({ variables: { book } });
+ 
 
     if (!searchInput) {
       return false;
@@ -41,7 +40,7 @@ const SearchBooks = () => {
       const { items } = await response.json();
 
       const bookData = items.map((book) => ({
-        bookId: book._id,
+        bookId: book.id,
         authors: book.volumeInfo.authors || ['No author to display'],
         title: book.volumeInfo.title,
         description: book.volumeInfo.description,
@@ -59,9 +58,8 @@ const SearchBooks = () => {
   const handleSaveBook = async (event, book) => {
     event.preventDefault();
     // find the book in `searchedBooks` state by the matching id
-    saveBook({ variables: { book } });
     
-
+    
     if (loading) {
       return <div>Saving...</div>;
     }
@@ -74,23 +72,14 @@ const SearchBooks = () => {
     //   );
     // }
 
-    const bookToSave = searchedBooks.find((book) => book.bookId === book._id);
-
-    const token = Auth.loggedIn() ? Auth.getToken() : null;
-
-    if (!token) {
-      return false;
-    }
+    // const bookToSave = searchedBooks.find((book) => book.bookId === book.id);
 
     try {
-      const response = await saveBook(bookToSave, token);
-
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
+      // const response = await saveBook(book);
+      saveBook({ variables: { book } });
 
       // if book successfully saves to user's account, save book id to state
-      setSavedBookIds([...savedBookIds, bookToSave.bookId]);
+      setSavedBookIds([...savedBookIds, book.bookId]);
     } catch (err) {
       console.error(err);
     }
@@ -144,7 +133,7 @@ const SearchBooks = () => {
                     <Button
                       disabled={savedBookIds?.some((savedBookId) => savedBookId === book.bookId)}
                       className='btn-block btn-info'
-                      onClick={(event) => handleSaveBook(book)}>
+                      onClick={(event) => handleSaveBook(event, book)}>
                       {savedBookIds?.some((savedBookId) => savedBookId === book.bookId)
                         ? 'This book has already been saved!'
                         : 'Save this Book!'}
