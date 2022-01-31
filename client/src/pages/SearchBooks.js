@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Jumbotron, Container, Col, Form, Button, Card, CardColumns } from 'react-bootstrap';
-
 import Auth from '../utils/auth';
 import { useMutation } from '@apollo/client';
-import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
-import { saveBook } from '../utils/API';
-
-
+import { getSavedBookIds } from '../utils/localStorage';
+import { searchGoogleBooks } from '../utils/API';
+import { SAVE_BOOK } from '../utils/mutations';
 
 
 const SearchBooks = () => {
@@ -21,9 +19,8 @@ const SearchBooks = () => {
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
 
-  const [savebook, { data, loading, error }] = useMutation(SAVE_BOOK);
-  const books = data?.books || [];
-
+  const [saveBook, { data, loading, error }] = useMutation(SAVE_BOOK);
+  const book = data?.books || [];
   
   const handleFormSubmit = async (event) => {
     event.preventDefault();
@@ -44,7 +41,7 @@ const SearchBooks = () => {
       const { items } = await response.json();
 
       const bookData = items.map((book) => ({
-        bookId: book.id,
+        bookId: book._id,
         authors: book.volumeInfo.authors || ['No author to display'],
         title: book.volumeInfo.title,
         description: book.volumeInfo.description,
@@ -67,18 +64,17 @@ const SearchBooks = () => {
 
     if (loading) {
       return <div>Saving...</div>;
-
     }
 
-    if (!user?.username) {
-      return (
-        <hr>
-        You need to be logged in to control the world
-        </hr>
-      );
-    }
+    // if (!user?.username) {
+    //   return (
+    //     <hr>
+    //     You need to be logged in to control the world
+    //     </hr>
+    //   );
+    // }
 
-    const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
+    const bookToSave = searchedBooks.find((book) => book.bookId === book._id);
 
     const token = Auth.loggedIn() ? Auth.getToken() : null;
 
