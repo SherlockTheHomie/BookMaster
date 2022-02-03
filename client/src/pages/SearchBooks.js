@@ -55,7 +55,7 @@ const SearchBooks = () => {
   };
 
   // create function to handle saving a book to our database
-  const handleSaveBook = async (event, book) => {
+  const handleSaveBook = (event, book) => {
     event.preventDefault();
     // find the book in `searchedBooks` state by the matching id
     

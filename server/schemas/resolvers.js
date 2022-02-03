@@ -8,6 +8,7 @@ const resolvers = {
       if (context.user) {
         return User.findOne({ _id: context.user._id });
       }
+      throw new AuthenticationError('You need to be logged in!');
     },
 
   },
@@ -37,25 +38,26 @@ const resolvers = {
     saveBook: async (parent, { book }, context) => {
       // If context has a `user` property, that means the user executing this mutation has a valid JWT and is logged in
       if (context.user) {
-        return User.findOneAndUpdate(
+        const updatedUser = User.findOneAndUpdate(
           { _id: context.user._id },
           { $addToSet: { savedBooks: book } },
           { new: true, runValidators: true }
-        );
+        )
+        return updatedUser;
       }
-    
       throw new AuthenticationError('You need to be logged in!');
     },
+
     removeBook: async (parent, { User }, context) => {
       if (context.user) {
         const book = await User.findOne({
-          savedBooks: bookId
+          savedBooks: bookId,
         });
         await User.findOneAndUpdate(
-          { savedBooks: bookId },
-          { $pull: { savedBooks: book } },
-          { new: true }
-        )
+          { _id: context.user._id },
+          { $pull: { savedBooks: bookId } }
+        );
+        return book;
       }
       throw new AuthenticationError('You need to be logged in!');
     },
