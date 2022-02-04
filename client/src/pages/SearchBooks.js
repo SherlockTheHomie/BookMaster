@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Jumbotron, Container, Col, Form, Button, Card, CardColumns } from 'react-bootstrap';
 import Auth from '../utils/auth';
 import { useMutation } from '@apollo/client';
@@ -6,6 +6,7 @@ import { getSavedBookIds } from '../utils/localStorage';
 import { searchGoogleBooks } from '../utils/API';
 import { SAVE_BOOK } from '../utils/mutations';
 
+const LOCAL_STORAGE_KEY = 'googleBookSearch.savedbooks'
 
 const SearchBooks = () => {
 
@@ -18,6 +19,15 @@ const SearchBooks = () => {
 
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
+  
+  // useEffect(() => {
+  //   const savedBooksJSON = localStorage.getItem(LOCAL_STORAGE_KEY)
+  //   if (savedBooksJSON != null) setSavedBookIds(JSON.parse(savedBooksJSON))
+  // }, [])
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(savedBookIds))
+  }, [savedBookIds])
 
   const [saveBook, { data, loading, error }] = useMutation(SAVE_BOOK);
   
@@ -55,24 +65,14 @@ const SearchBooks = () => {
   };
 
   // create function to handle saving a book to our database
-  const handleSaveBook = (event, book) => {
+  const handleSaveBook = ( event, book) => {
     event.preventDefault();
-    // find the book in `searchedBooks` state by the matching id
-    
+
+  
     
     if (loading) {
       return <div>Saving...</div>;
     }
-
-    // if (!user?.username) {
-    //   return (
-    //     <hr>
-    //     You need to be logged in to control the world
-    //     </hr>
-    //   );
-    // }
-
-    // const bookToSave = searchedBooks.find((book) => book.bookId === book.id);
 
     try {
       // const response = await saveBook(book);
